@@ -15,7 +15,7 @@ var fs = require('fs');
 var path = require('path');
 var readfiles = require('readfiles');
 
-var TCP_PORT = 3000;
+var TCP_PORT = 9000;
 var IO_PORT = 5000;
 
 var clients = []; // 이전 소켓의 그룹
