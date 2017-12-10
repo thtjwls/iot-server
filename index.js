@@ -2,25 +2,38 @@
 
 /* ======================= Config 부분 ========================= */
 /* socket io import */
-var app = require('express');
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var app                 = require('express');
+var http                = require('http').Server(app);
+var io                  = require('socket.io')(http);
 
 /* TCP import */
-var net = require('net');
-var server = net.createServer();
+var net                 = require('net');
+var server              = net.createServer();
 
 /* 로그 파일을 만들기 위한 모듈 */
-var fs = require('fs');
-var path = require('path');
-var readfiles = require('readfiles');
+var fs                  = require('fs');
+var path                = require('path');
+var readfiles           = require('readfiles');
 
-var TCP_PORT = 9000;
-var IO_PORT = 5000;
+var TCP_PORT            = 9000;
+var IO_PORT             = 5000;
 
-var clients = []; // 이전 소켓의 그룹
-var connecting_count = 0;
+var clients             = [];   // 연결되어있는 TCP 소켓 그룹
+var client_connector    = 0;    // 현재 WEB 측 커넥터 수
+var device_connector    = 0;    // 현재 장비 측 커넥터 수
 /* END - ======================= Config 부분 ========================= */
+
+/* 데이터 객체 */
+var data_object = {
+
+};
+
+var log_object = {
+    remoteAddress: null,
+    remotePort: null
+}
+
+/* 데이터 객체 END */
 
 /* ====================== 서버 생성 부분 ====================== */
 /* Socket IO Server Run */
@@ -32,7 +45,6 @@ http.listen(IO_PORT, function () {
 server.listen(TCP_PORT, function () {
     console.log('TCP Server running at : ' + TCP_PORT);
 });
-
 /* END - ====================== 서버 생성 부분 ====================== */
 
 
@@ -40,8 +52,9 @@ server.listen(TCP_PORT, function () {
 
 /* 클라이언트 -> 장비 커넥터 */
 io.on('connection', function (socket) {
-    connecting_count++;
-    console.log('client connect : Socket IO - connector: ' + connecting_count);
+    client_connector++;
+    console.log('client connect : Socket IO - connector: ' + client_connector);
+    get_connect();
 
     /* 이벤트 처리 */
 
@@ -56,14 +69,18 @@ io.on('connection', function (socket) {
         io.emit('send-packet-bind', data);
     })
 
-
     socket.on('read-log', function () {
         readDirList();
     })
 
     socket.on('disconnect', () => {
-        connecting_count--;
-        console.log('client disconnect - connecting: ' + connecting_count);
+        client_connector--;
+        console.log('client disconnect - connecting: ' + client_connector);
+        get_connect();
+    })
+
+    socket.on('get-connect-count', () => {
+        io.emit('response', { device: device_connector, client: client_connector });
     })
 });
 
@@ -71,19 +88,31 @@ io.on('connection', function (socket) {
 /* TCP */
 /* 장비 -> 클라이언트 커넥터 */
 server.on('connection', function (socket) {
+    device_connector++;
     console.log('client connect : TCP');
     clients.push(socket);
     console.log('socket address : ' + socket.remoteAddress);
     console.log('socket port : ' + socket.remotePort);
+    console.log('TCP connect: ' + device_connector);
+    get_connect();
 
     socket.on('data', function (data) {
+        log_object.remoteAddress = socket.remoteAddress;
+        log_object.remotePort = socket.remotePort;
+        var _data = data + '\n\n' + JSON.stringify(log_object);
         console.log('Device -> Client : ' + new Date());
-        writeFile('device', data);
+        writeFile('device', _data);
         readDirList();
 
         
         // 장비 -> 클라이언트
         io.emit('receive-packet', data.toString());
+    })
+
+    socket.on('close', function () {
+        device_connector--;
+        get_connect();
+        console.log('TCP Disconnect: ' + device_connector);
     })
 });
 
@@ -92,6 +121,10 @@ server.on('connection', function (socket) {
 io.on('send-packet', function () {
     console.log('recevive packet !');
 });
+
+function get_connect() {
+    io.emit('response-connect-count', { device: device_connector, client: client_connector });
+}
 
 function readDirList() {
     fs.readdir(__dirname + '/log/device/', (err, files) => {
@@ -124,7 +157,7 @@ function writeFile(u, data) {
     });
 
 
-    fs.writeFile(filename, data, 'utf8', function (err) {
+    fs.writeFile(filename, data, function (err) {
         console.log(getNowTime() + '에 로그 기록!');
     })
 }
