@@ -19,6 +19,7 @@ var TCP_PORT = 9000;
 var IO_PORT = 5000;
 
 var clients = []; // 이전 소켓의 그룹
+var connecting_count = 0;
 /* END - ======================= Config 부분 ========================= */
 
 /* ====================== 서버 생성 부분 ====================== */
@@ -36,36 +37,35 @@ server.listen(TCP_PORT, function () {
 
 
 /* socket io */
-io.on('connection', function (socket) {
-    console.log('client connect : Socket IO');
-});
 
 /* 클라이언트 -> 장비 커넥터 */
-io.sockets.on('connection', function (socket) {
+io.on('connection', function (socket) {
+    connecting_count++;
+    console.log('client connect : Socket IO - connector: ' + connecting_count);
 
     /* 이벤트 처리 */
-    socket.on('send-packet', function (data) {
-        console.log('send-packet 이벤트 !! : ');
-        console.log(data.Sync1);
-        console.log(' END === send-packet 이벤트 !! === ');
-        // console.log('io connectoin sockets : ' + clients.length);
-        console.log('Client -> Device : ' + new Date());
-        writeFile('client', JSON.stringify(data));
 
+    // 신규접속 이벤트 처리
+    socket.emit('UserConnect');
+
+    socket.on('send-packet', function (data) {
+        writeFile('client', JSON.stringify(data));
         clients.forEach(function (client) {
-            var stream_port = client.remotePort;
-            client.write('adsf');
+            client.write(data);
         });
+        io.emit('send-packet-bind', data);
     })
+
 
     socket.on('read-log', function () {
         readDirList();
     })
-});
 
-io.on('close', function () {
-    console.log('client disconnect\n');
-})
+    socket.on('disconnect', () => {
+        connecting_count--;
+        console.log('client disconnect - connecting: ' + connecting_count);
+    })
+});
 
 
 /* TCP */
@@ -83,7 +83,7 @@ server.on('connection', function (socket) {
 
         
         // 장비 -> 클라이언트
-        io.sockets.emit('receive-packet', data.toString());
+        io.emit('receive-packet', data.toString());
     })
 });
 
@@ -126,6 +126,5 @@ function writeFile(u, data) {
 
     fs.writeFile(filename, data, 'utf8', function (err) {
         console.log(getNowTime() + '에 로그 기록!');
-        console.log(err);
     })
 }
