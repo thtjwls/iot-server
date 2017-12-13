@@ -18,7 +18,8 @@ var readfiles           = require('readfiles');
 var TCP_PORT            = 9000;
 var IO_PORT             = 5000;
 
-var clients             = [];   // 연결되어있는 TCP 소켓 그룹
+var tcps                = [];   // 연결되어있는 TCP 소켓 그룹
+var clients             = [];
 var client_connector    = 0;    // 현재 WEB 측 커넥터 수
 var device_connector    = 0;    // 현재 장비 측 커넥터 수
 /* END - ======================= Config 부분 ========================= */
@@ -53,7 +54,8 @@ server.listen(TCP_PORT, function () {
 /* 클라이언트 -> 장비 커넥터 */
 io.on('connection', function (socket) {
     client_connector++;
-    console.log('client connect : Socket IO - connector: ' + client_connector);
+    var handshake = socket.handshake;
+    clients.push({id: socket.id ,address: handshake.address });
     get_connect();
 
     /* 이벤트 처리 */
@@ -63,7 +65,7 @@ io.on('connection', function (socket) {
 
     socket.on('send-packet', function (data) {
         writeFile('client', JSON.stringify(data));
-        clients.forEach(function (client) {
+        tcps.forEach(function (client) {
             client.write(data);
         });
         io.emit('send-packet-bind', data);
@@ -75,7 +77,8 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', () => {
         client_connector--;
-        console.log('client disconnect - connecting: ' + client_connector);
+        var socketId = clients.findIndex((item) => { return item.id == socket.id});
+        clients.splice(socketId, 1);
         get_connect();
     })
 
@@ -89,18 +92,13 @@ io.on('connection', function (socket) {
 /* 장비 -> 클라이언트 커넥터 */
 server.on('connection', function (socket) {
     device_connector++;
-    console.log('client connect : TCP');
-    clients.push(socket);
-    console.log('socket address : ' + socket.remoteAddress);
-    console.log('socket port : ' + socket.remotePort);
-    console.log('TCP connect: ' + device_connector);
+    tcps.push({ ip: socket.remoteAddress, port: socket.remotePort});
     get_connect();
 
     socket.on('data', function (data) {
         log_object.remoteAddress = socket.remoteAddress;
         log_object.remotePort = socket.remotePort;
         var _data = data + '\n\n' + JSON.stringify(log_object);
-        console.log('Device -> Client : ' + new Date());
         writeFile('device', _data);
         readDirList();
 
@@ -111,6 +109,8 @@ server.on('connection', function (socket) {
 
     socket.on('close', function () {
         device_connector--;
+        var socketPort = tcps.findIndex((item) => { return item.port == socket.remotePort});
+        tcps.splice(socketPort, 1);
         get_connect();
         console.log('TCP Disconnect: ' + device_connector);
     })
@@ -123,7 +123,7 @@ io.on('send-packet', function () {
 });
 
 function get_connect() {
-    io.emit('response-connect-count', { device: device_connector, client: client_connector });
+    io.emit('response-connect-count', { device: device_connector, client: client_connector, device_info: tcps, client_info: clients});
 }
 
 function readDirList() {
