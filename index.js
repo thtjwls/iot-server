@@ -104,7 +104,8 @@ server.on('connection', function (socket) {
 
         
         // 장비 -> 클라이언트
-        io.emit('receive-packet', data);
+        io.emit('receive-packet', data.toString());
+        console.log(data.toString());
     })
 
     socket.on('close', function () {
