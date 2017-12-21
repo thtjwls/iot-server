@@ -1,4 +1,8 @@
 /* ============== Packet Interface ============== */
+/* ======================= Utilities ======================= */
+const conv              = require('binstring');
+
+/* ======================= END Utilities ======================= */
 
 /* ======================= Config 부분 ========================= */
 /* socket io import */
@@ -104,8 +108,7 @@ server.on('connection', function (socket) {
 
         
         // 장비 -> 클라이언트
-        io.emit('receive-packet', data.toString());
-        console.log(data.toString());
+        io.emit('receive-packet', buffer_decode(data));
     })
 
     socket.on('close', function () {
@@ -113,7 +116,6 @@ server.on('connection', function (socket) {
         var socketPort = tcps.findIndex((item) => { return item.port == socket.remotePort});
         tcps.splice(socketPort, 1);
         get_connect();
-        console.log('TCP Disconnect: ' + device_connector);
     })
 });
 
@@ -122,6 +124,14 @@ server.on('connection', function (socket) {
 io.on('send-packet', function () {
     console.log('recevive packet !');
 });
+
+function buffer_decode(data) {
+    return conv(data, {in: 'hex', out: 'utf8'});
+}
+
+function buffer_encode(data) {
+    return conv(data, {in: 'utf8', out: 'hex'});
+}
 
 function get_connect() {
     io.emit('response-connect-count', { device: device_connector, client: client_connector, device_info: tcps, client_info: clients});

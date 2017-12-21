@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "binstring": "^0.2.1",
     "express": "^4.16.2",
     "readfiles": "^1.0.0",
     "socket.io": "^2.0.4",
