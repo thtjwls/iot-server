@@ -1,6 +1,6 @@
 /* ============== Packet Interface ============== */
 /* ======================= Utilities ======================= */
-const conv              = require('binstring');
+//const conv              = require('binstring');
 
 /* ======================= END Utilities ======================= */
 
@@ -22,16 +22,16 @@ var readfiles           = require('readfiles');
 var TCP_PORT            = 9000;
 var IO_PORT             = 5000;
 
-var tcps                = [];   // 연결되어있는 TCP 소켓 그룹
+var tcps                = [];
+tcps['sockets']         = [];   // 연결되어있는 TCP 소켓 그룹
+tcps['info']            = [];   // 화면에 표시할 수 있는 tcp 소켓 정보
+
+
 var clients             = [];
+
 var client_connector    = 0;    // 현재 WEB 측 커넥터 수
 var device_connector    = 0;    // 현재 장비 측 커넥터 수
 /* END - ======================= Config 부분 ========================= */
-
-/* 데이터 객체 */
-var data_object = {
-
-};
 
 var log_object = {
     remoteAddress: null,
@@ -68,10 +68,20 @@ io.on('connection', function (socket) {
     socket.emit('UserConnect');
 
     socket.on('send-packet', function (data) {
+
         writeFile('client', JSON.stringify(data));
-        tcps.forEach(function (client) {
-            client.write(data);
+
+        tcps['sockets'].forEach(function (client) {
+
+            /** 서버 종료가 일어나지 않도록 try ~ catch 문으로 묶음. **/
+            try {
+                client.write(data);
+            } catch (e) {
+                console.log(e);
+            }
+
         });
+
         io.emit('send-packet-bind', data);
     })
 
@@ -96,17 +106,21 @@ io.on('connection', function (socket) {
 /* 장비 -> 클라이언트 커넥터 */
 server.on('connection', function (socket) {
     device_connector++;
-    tcps.push({ ip: socket.remoteAddress, port: socket.remotePort});
+    //tcps.push({ ip: socket.remoteAddress, port: socket.remotePort});
+    //tcps.push(socket);
+    tcps['sockets'].push(socket);
+    tcps['info'].push({ ip: socket.remoteAddress, port: socket.remotePort});
+
     get_connect();
 
     socket.on('data', function (data) {
         log_object.remoteAddress = socket.remoteAddress;
         log_object.remotePort = socket.remotePort;
-        var _data = data + '\n\n' + JSON.stringify(log_object);
+        var _data = buffer_encode(data) + '\n\n' + JSON.stringify(log_object);
         writeFile('device', _data);
         readDirList();
 
-        
+        console.log(data);
         // 장비 -> 클라이언트
         io.emit('receive-packet', buffer_decode(data));
     })
@@ -114,7 +128,8 @@ server.on('connection', function (socket) {
     socket.on('close', function () {
         device_connector--;
         var socketPort = tcps.findIndex((item) => { return item.port == socket.remotePort});
-        tcps.splice(socketPort, 1);
+        tcps['sockets'].splice(socketPort, 1);
+        tcps['info'].splice(socketPort, 1);
         get_connect();
     })
 });
@@ -126,15 +141,21 @@ io.on('send-packet', function () {
 });
 
 function buffer_decode(data) {
-    return conv(data, {in: 'hex', out: 'utf8'});
+
+    return JSON.stringify(data);
 }
 
 function buffer_encode(data) {
-    return conv(data, {in: 'utf8', out: 'hex'});
+    //return conv(data, {in: 'utf8', out: 'hex'});
 }
 
 function get_connect() {
-    io.emit('response-connect-count', { device: device_connector, client: client_connector, device_info: tcps, client_info: clients});
+    io.emit('response-connect-count', {
+        device: device_connector,
+        client: client_connector,
+        device_info: tcps['info'],
+        client_info: clients
+    });
 }
 
 function readDirList() {
@@ -172,3 +193,13 @@ function writeFile(u, data) {
         console.log(getNowTime() + '에 로그 기록!');
     })
 }
+
+// test
+
+var str = 58;
+var buf = new Buffer(170);
+
+for (var i = 0; i < buf.length; i++) {
+    buf[i] = 170;
+}
+console.log(String.fromCharCode(str));
