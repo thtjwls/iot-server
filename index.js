@@ -7,8 +7,10 @@
 /* ======================= Config 부분 ========================= */
 /* socket io import */
 var app                 = require('express');
-var http                = require('http').Server(app);
-var io                  = require('socket.io')(http);
+var http                = require('http');
+var httpServer          = http.Server(app);
+var io                  = require('socket.io')(httpServer);
+var request             = require('request');
 
 /* TCP import */
 var net                 = require('net');
@@ -21,6 +23,20 @@ var readfiles           = require('readfiles');
 
 var TCP_PORT            = 9000;
 var IO_PORT             = 5000;
+
+/* API 설정 부분 */
+var DB_SERVER           = [];
+    DB_SERVER['HOST']   = 'http://127.0.0.1';
+    DB_SERVER['PORT']   = '8080';
+    DB_SERVER['PATH']   = '/api/packet';
+    DB_SERVER['URI']    = `${DB_SERVER['HOST']}:${DB_SERVER['PORT']}${DB_SERVER['PATH']}`;
+
+var REQUEST_HEADER      = {
+    'Content-Type': 'application/json',
+    'User-Agent':       'Super Agent/0.0.1'
+};
+
+
 
 var tcps                = [];
 tcps['sockets']         = [];   // 연결되어있는 TCP 소켓 그룹
@@ -38,11 +54,17 @@ var log_object = {
     remotePort: null
 }
 
+var packet_data = {
+    ip: null,
+    port: null,
+    data: null
+}
+
 /* 데이터 객체 END */
 
 /* ====================== 서버 생성 부분 ====================== */
 /* Socket IO Server Run */
-http.listen(IO_PORT, function () {
+httpServer.listen(IO_PORT, function () {
     console.log('Socket Io Server running at : ' + IO_PORT);
 });
 
@@ -114,11 +136,23 @@ server.on('connection', function (socket) {
     get_connect();
 
     socket.on('data', function (data) {
-        log_object.remoteAddress = socket.remoteAddress;
-        log_object.remotePort = socket.remotePort;
-        var _data = buffer_encode(data) + '\n\n' + JSON.stringify(log_object);
-        writeFile('device', _data);
-        readDirList();
+
+        packet_data.ip = socket.remoteAddress;
+        packet_data.data = buffer_decode(data);
+        packet_data.port = socket.remotePort;
+
+        var options = {
+            url: DB_SERVER['URI'],
+            method: 'POST',
+            headers: REQUEST_HEADER,
+            qs: packet_data
+        }
+
+        request(options, (err, res, body) => {
+            if ( !err && res.statusCode == 200) {
+                console.log(body);
+            }
+        });
 
         console.log(data);
         // 장비 -> 클라이언트
@@ -141,8 +175,11 @@ io.on('send-packet', function () {
 });
 
 function buffer_decode(data) {
+    var string_data = JSON.stringify(data);
+    var object_parse_by_data = JSON.parse(string_data).data;
+    var re_string_data = JSON.stringify(object_parse_by_data);
 
-    return JSON.stringify(data);
+    return re_string_data;
 }
 
 function buffer_encode(data) {
