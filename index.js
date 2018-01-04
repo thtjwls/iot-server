@@ -1,8 +1,38 @@
 /* ============== Packet Interface ============== */
 /* ======================= Utilities ======================= */
-//const conv              = require('binstring');
+
 
 /* ======================= END Utilities ======================= */
+
+/* 선언부 */
+var hub_data            = {
+    name: 'other',
+    len: 0,
+    header: null,
+    hub_version: null,
+    hub_id: null,
+    hcu_id: null,
+    dcu_id: null,
+    electric: 0,
+    water: 0,
+    ext1: 0,
+    ext2: 0,
+    ext3: 0,
+    ext4: 0,
+}
+
+var hub_omni            = {
+    name: 'omni',
+    len: 31,
+    header: [170, 85],
+    version: null,
+    hub_id: null,
+    hcu_id: null,
+    electric: null,
+    water: null
+}
+
+/* END 선언부 */
 
 /* ======================= Config 부분 ========================= */
 /* socket io import */
@@ -154,7 +184,6 @@ server.on('connection', function (socket) {
             }
         });
 
-        console.log(data);
         // 장비 -> 클라이언트
         io.emit('receive-packet', buffer_decode(data));
     })
@@ -175,9 +204,27 @@ io.on('send-packet', function () {
 });
 
 function buffer_decode(data) {
+
     var string_data = JSON.stringify(data);
-    var object_parse_by_data = JSON.parse(string_data).data;
-    var re_string_data = JSON.stringify(object_parse_by_data);
+    var od = JSON.parse(string_data).data;
+    hub_data.len = data.length;
+
+    if ( od[0] == 170 && od[1] == 85 && od[2] == 2 ) {
+        hub_data.name = 'omni';
+        hub_data.hub_version = od[3];
+        hub_data.hub_id = od[4];
+        hub_data.hcu_id = od[5];
+        hub_data.dcu_id = od[6];
+        hub_data.electric = `${od[7]}T${od[8]}T${od[9]}T${od[10]}`;
+        hub_data.water = `${od[11]}T${od[12]}T${od[13]}T${od[14]}`;
+        hub_data.ext1 = `${od[15]}T${od[16]}T${od[17]}T${od[18]}`;
+        hub_data.ext1 = `${od[19]}T${od[20]}T${od[21]}T${od[22]}`;
+        hub_data.ext1 = `${od[23]}T${od[24]}T${od[25]}T${od[26]}`;
+        hub_data.ext1 = `${od[27]}T${od[28]}T${od[29]}T${od[30]}`;
+    }
+
+
+    var re_string_data = JSON.stringify(hub_data);
 
     return re_string_data;
 }
@@ -230,13 +277,3 @@ function writeFile(u, data) {
         console.log(getNowTime() + '에 로그 기록!');
     })
 }
-
-// test
-
-var str = 58;
-var buf = new Buffer(170);
-
-for (var i = 0; i < buf.length; i++) {
-    buf[i] = 170;
-}
-console.log(String.fromCharCode(str));
