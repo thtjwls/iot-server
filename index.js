@@ -121,7 +121,7 @@ io.on('connection', function (socket) {
 
     socket.on('send-packet', function (data) {
 
-        writeFile('client', JSON.stringify(data));
+        //writeFile('client', JSON.stringify(data));
 
         tcps['sockets'].forEach(function (client) {
 
@@ -138,7 +138,7 @@ io.on('connection', function (socket) {
     })
 
     socket.on('read-log', function () {
-        readDirList();
+        //readDirList();
     })
 
     socket.on('disconnect', () => {
