@@ -211,8 +211,8 @@ function buffer_decode(data) {
         hub_data.name = 'omni';
         hub_data.hub_version = od[3];
         hub_data.hub_id = od[4];
-        hub_data.hcu_id = od[5];
-        hub_data.dcu_id = od[6];
+        hub_data.dcu_id = od[5];
+        hub_data.hcu_id = od[6];
         hub_data.electric = `${od[7]}T${od[8]}T${od[9]}T${od[10]}`;
         hub_data.water = `${od[11]}T${od[12]}T${od[13]}T${od[14]}`;
         hub_data.ext1 = `${od[15]}T${od[16]}T${od[17]}T${od[18]}`;
