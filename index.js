@@ -243,9 +243,9 @@ function get_connect() {
 }
 
 function readDirList() {
-    fs.readdir(__dirname + '/log/device/', (err, files) => {
-        io.sockets.emit('read-log-res', files);
-    })
+    // fs.readdir(__dirname + '/log/device/', (err, files) => {
+    //     io.sockets.emit('read-log-res', files);
+    // })
 }
 
 function getNowTime() {
@@ -268,12 +268,12 @@ function writeFile(u, data) {
 
     var filename = 'log/' + u + '/' + getNowTime() + '.txt';
 
-    fs.open(filename, 'w', function (err, fd) {
-        if ( err ) throw err;
-    });
-
-
-    fs.writeFile(filename, data, function (err) {
-        console.log(getNowTime() + '에 로그 기록!');
-    })
+    // fs.open(filename, 'w', function (err, fd) {
+    //     if ( err ) throw err;
+    // });
+    //
+    //
+    // fs.writeFile(filename, data, function (err) {
+    //     console.log(getNowTime() + '에 로그 기록!');
+    // })
 }
