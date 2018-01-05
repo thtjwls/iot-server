@@ -211,16 +211,16 @@ function buffer_decode(data) {
 
     if ( od[0] == 170 && od[1] == 85 && od[2] == 2 ) {
         hub_data.name = 'omni';
-        hub_data.hub_version = od[3];
-        hub_data.hub_id = od[4];
-        hub_data.hcu_id = od[5];
-        hub_data.dcu_id = od[6];
-        hub_data.electric = `${od[7]}T${od[8]}T${od[9]}T${od[10]}`;
-        hub_data.water = `${od[11]}T${od[12]}T${od[13]}T${od[14]}`;
-        hub_data.ext1 = `${od[15]}T${od[16]}T${od[17]}T${od[18]}`;
-        hub_data.ext1 = `${od[19]}T${od[20]}T${od[21]}T${od[22]}`;
-        hub_data.ext1 = `${od[23]}T${od[24]}T${od[25]}T${od[26]}`;
-        hub_data.ext1 = `${od[27]}T${od[28]}T${od[29]}T${od[30]}`;
+        hub_data.hub_version = od[3].toString(16);
+        hub_data.hub_id = od[4].toString(16);
+        hub_data.hcu_id = od[5].toString(16);
+        hub_data.dcu_id = od[6].toString(16);
+        hub_data.electric = `${od[7].toString(16)}T${od[8].toString(16)}T${od[9].toString(16)}T${od[10].toString(16)}`;
+        hub_data.water = `${od[11].toString(16)}T${od[12].toString(16)}T${od[13].toString(16)}T${od[14].toString(16)}`;
+        hub_data.ext1 = `${od[15].toString(16)}T${od[16].toString(16)}T${od[17].toString(16)}T${od[18].toString(16)}`;
+        hub_data.ext1 = `${od[19].toString(16)}T${od[20].toString(16)}T${od[21].toString(16)}T${od[22].toString(16)}`;
+        hub_data.ext1 = `${od[23].toString(16)}T${od[24].toString(16)}T${od[25].toString(16)}T${od[26].toString(16)}`;
+        hub_data.ext1 = `${od[27].toString(16)}T${od[28].toString(16)}T${od[29].toString(16)}T${od[30].toString(16)}`;
     }
 
 
