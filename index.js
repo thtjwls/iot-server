@@ -213,12 +213,12 @@ function buffer_decode(data) {
         hub_data.hub_id = od[4];
         hub_data.dcu_id = od[5];
         hub_data.hcu_id = od[6];
-        hub_data.electric = `${od[7]}T${od[8]}T${od[9]}T${od[10]}`;
-        hub_data.water = `${od[11]}T${od[12]}T${od[13]}T${od[14]}`;
-        hub_data.ext1 = `${od[15]}T${od[16]}T${od[17]}T${od[18]}`;
-        hub_data.ext1 = `${od[19]}T${od[20]}T${od[21]}T${od[22]}`;
-        hub_data.ext1 = `${od[23]}T${od[24]}T${od[25]}T${od[26]}`;
-        hub_data.ext1 = `${od[27]}T${od[28]}T${od[29]}T${od[30]}`;
+        hub_data.electric = `${od[7]}:${od[8]}:${od[9]}:${od[10]}`;
+        hub_data.water = `${od[11]}:${od[12]}:${od[13]}:${od[14]}`;
+        hub_data.ext1 = `${od[15]}:${od[16]}:${od[17]}:${od[18]}`;
+        hub_data.ext1 = `${od[19]}:${od[20]}:${od[21]}:${od[22]}`;
+        hub_data.ext1 = `${od[23]}:${od[24]}:${od[25]}:${od[26]}`;
+        hub_data.ext1 = `${od[27]}:${od[28]}:${od[29]}:${od[30]}`;
     }
 
 
