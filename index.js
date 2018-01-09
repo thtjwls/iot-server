@@ -215,10 +215,10 @@ function buffer_decode(data) {
         hub_data.dcu_id = od[5];
         hub_data.hcu_id = od[6];
 
-        var ele_packet = od[7] + od[8] + od[9] + od[10];
+        var ele_packet = (od[7].toString(16) + od[8].toString(16) + od[9].toString(16) + od[10].toString(16)).toString(10);
         //hub_data.electric = `${od[7].toString(16)}:${od[8].toString(16)}:${od[9].toString(16)}:${od[10].toString(16)}`;
         hub_data.electric = ele_packet;
-        var wat_packet = od[11] + od[12] + od[13] + od[14];
+        var wat_packet = (od[11].toString(16) + od[12].toString(16) + od[13].toString(16) + od[14].toString(16)).toString(10);
         //hub_data.water = `${od[11].toString(16)}:${od[12].toString(16)}:${od[13].toString(16)}:${od[14].toString(16)}`;
         hub_data.water = wat_packet;
         hub_data.ext1 = `${od[15]}:${od[16]}:${od[17]}:${od[18]}`;
