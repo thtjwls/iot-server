@@ -46,10 +46,8 @@ var request             = require('request');
 var net                 = require('net');
 var server              = net.createServer();
 
-/* 로그 파일을 만들기 위한 모듈 */
-var fs                  = require('fs');
-var path                = require('path');
-var readfiles           = require('readfiles');
+var fc                  = require('./floor-control');
+
 
 var TCP_PORT            = 9000;
 var IO_PORT             = 5000;
@@ -135,6 +133,37 @@ io.on('connection', function (socket) {
         });
 
         io.emit('send-packet-bind', data);
+    })
+
+    socket.on('floor-on', function (data) {
+
+        var packet = fc(data.floor, data.status);
+        console.log(packet);
+
+        /*
+        tcps['sockets'].forEach((client) => {
+            try {
+                client.write(packet);
+            } catch (e) {
+                console.log(e);
+            }
+        })
+        */
+    })
+
+    socket.on('floor-off', function (data) {
+        var packet = fc(data.floor, data.status);
+        console.log(packet);
+
+        /*
+        tcps['sockets'].forEach((client) => {
+            try {
+                client.write(packet);
+            } catch (e) {
+                console.log(e);
+            }
+        })
+        */
     })
 
     socket.on('read-log', function () {
@@ -229,10 +258,6 @@ function buffer_decode(data) {
     var re_string_data = JSON.stringify(hub_data);
 
     return re_string_data;
-}
-
-function buffer_encode(data) {
-    //return conv(data, {in: 'utf8', out: 'hex'});
 }
 
 /**
