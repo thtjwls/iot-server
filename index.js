@@ -21,17 +21,6 @@ var hub_data            = {
     ext4: 0,
 }
 
-var hub_omni            = {
-    name: 'omni',
-    len: 31,
-    header: [170, 85],
-    version: null,
-    hub_id: null,
-    hcu_id: null,
-    electric: null,
-    water: null
-}
-
 /* END 선언부 */
 
 /* ======================= Config 부분 ========================= */
@@ -46,7 +35,7 @@ var request             = require('request');
 var net                 = require('net');
 var server              = net.createServer();
 
-var fc                  = require('./floor-control');
+var fc                  = require('./modules/floor-control');
 
 
 var TCP_PORT            = 9000;
