@@ -6,6 +6,7 @@ const util = require('./modules/utility')();
 
 io.on('connection', () => {
     console.log('User Connect IO');
+    eventer.getConnection();
 });
 
 server.on('connection', socket => {
